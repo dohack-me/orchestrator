@@ -1,5 +1,3 @@
-import random
-import string
 import docker.errors
 from fastapi import FastAPI, Response, status
 from pydantic import BaseModel
@@ -13,13 +11,29 @@ class CreateServiceModel(BaseModel):
 
 class DeleteServiceModel(BaseModel):
     id: str
+
+"""
+Initialize global variables, including environment variables
+"""
 app = FastAPI()
 client = docker.from_env()
 base = os.getenv('BASE_URL')
 if base is None:
     raise Exception('Base URL environment variable not set')
-if base.count("*") != 1:
-    raise Exception('Base URL does not have exactly 1 asterisk')
+if base.count("*") > 1:
+    raise Exception('Base URL has more than 1 asterisk')
+
+"""
+Handles proxy container and network
+"""
+
+if not util.network_exists(client, "proxy"):
+    print("Could not find proxy network. Creating it now...")
+    client.networks.create(
+        name="proxy",
+        driver="bridge",
+    )
+    print("Created proxy network.")
 
 if not util.container_exists(client, "proxy"):
     print("Could not find proxy container. Creating it now...")
@@ -29,8 +43,9 @@ if not util.container_exists(client, "proxy"):
         name="proxy",
         restart_policy={"Name": "always"},
         detach=True,
-        command="--api.insecure=true --providers.docker",
-        ports={'80/tcp':80, "8080/tcp":8080},
+        network="proxy",
+        command="--providers.docker",
+        ports={'80/tcp':80},
         volumes=["/var/run/docker.sock:/var/run/docker.sock"]
     )
     print("Created proxy container.")
@@ -44,14 +59,22 @@ async def create(body: CreateServiceModel, response: Response):
     try:
         client.images.pull(body.image, body.tag)
         container_id = str(uuid.uuid4())
+        url = base.replace("*", container_id[:8])
         client.containers.run(
             image=body.image,
             name=container_id,
             auto_remove=True,
             detach=True,
-            labels=["traefik.http.routers.{}.rule=Host(`{}`)".format(container_id, base.replace("*", container_id[:8]))]
+            network="proxy",
+            labels={
+                "traefik.enable": "true",
+                "traefik.http.routers.{}.rule".format(container_id): "Host(`{}`)".format(url),
+            }
         )
-        return container_id
+        return {
+            "id": container_id,
+            "url": url
+        }
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 

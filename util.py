@@ -14,3 +14,10 @@ def container_exists(client: DockerClient, name: str) -> bool:
     except docker.errors.NotFound:
         return False
     return True
+
+def network_exists(client: DockerClient, name: str) -> bool:
+    try:
+        client.networks.get(name)
+    except docker.errors.NotFound:
+        return False
+    return True
