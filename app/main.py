@@ -73,7 +73,7 @@ async def create(body: CreateServiceModel, response: Response):
         )
         return {
             "id": container_id,
-            "url": url
+            "url": "http://" + url
         }
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

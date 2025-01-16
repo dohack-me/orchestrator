@@ -1,4 +1,5 @@
 docker
 fastapi
+fastapi[standard]
 pydantic
 uvicorn
