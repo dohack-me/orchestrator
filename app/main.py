@@ -12,43 +12,51 @@ class CreateServiceModel(BaseModel):
 class DeleteServiceModel(BaseModel):
     id: str
 
+def assert_env(name):
+    env = os.getenv(name)
+    if env is None:
+        raise RuntimeError("Environment variable {} is not set".format(name))
+    return env
+
 """
 Initialize global variables, including environment variables
 """
 app = FastAPI()
 client = docker.from_env()
-base = os.getenv('BASE_URL')
-if base is None:
-    raise Exception('Base URL environment variable not set')
+
+base = assert_env("BASE_URL")
 if base.count("*") > 1:
     raise Exception('Base URL has more than 1 asterisk')
+network_name = assert_env('NETWORK_NAME')
+skip_proxy = os.getenv("SKIP_PROXY")
 
 """
 Handles proxy container and network
 """
 
-if not util.network_exists(client, "proxy"):
+if not util.network_exists(client, network_name):
     print("Could not find proxy network. Creating it now...")
     client.networks.create(
-        name="proxy",
+        name=network_name,
         driver="bridge",
     )
     print("Created proxy network.")
 
-if not util.container_exists(client, "proxy"):
-    print("Could not find proxy container. Creating it now...")
-    client.images.pull("traefik", "latest")
-    client.containers.run(
-        image="traefik",
-        name="proxy",
-        restart_policy={"Name": "always"},
-        detach=True,
-        network="proxy",
-        command="--providers.docker",
-        ports={'80/tcp':80},
-        volumes=["/var/run/docker.sock:/var/run/docker.sock"]
-    )
-    print("Created proxy container.")
+if skip_proxy is not None and skip_proxy.lower() == "true":
+    if not util.container_exists(client, "proxy"):
+        print("Could not find proxy container. Creating it now...")
+        client.images.pull("traefik", "latest")
+        client.containers.run(
+            image="traefik",
+            name="proxy",
+            restart_policy={"Name": "always"},
+            detach=True,
+            network="proxy",
+            command="--providers.docker",
+            ports={'80/tcp': 80},
+            volumes=["/var/run/docker.sock:/var/run/docker.sock"]
+        )
+        print("Created proxy container.")
 
 @app.get("/")
 async def root():
@@ -65,7 +73,7 @@ async def create(body: CreateServiceModel, response: Response):
             name=container_id,
             auto_remove=True,
             detach=True,
-            network="proxy",
+            network=network_name,
             labels={
                 "traefik.enable": "true",
                 "traefik.http.routers.{}.rule".format(container_id): "Host(`{}`)".format(url),
