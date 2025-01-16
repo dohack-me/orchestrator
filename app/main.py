@@ -1,5 +1,6 @@
+from typing import Annotated
 import docker.errors
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Response, Header, status
 from pydantic import BaseModel
 import os
 import uuid
@@ -27,6 +28,7 @@ client = docker.from_env()
 base = assert_env("BASE_URL")
 if base.count("*") > 1:
     raise Exception('Base URL has more than 1 asterisk')
+secret_key = assert_env("SECRET_KEY")
 network_name = assert_env('NETWORK_NAME')
 skip_proxy = os.getenv("SKIP_PROXY")
 
@@ -63,7 +65,17 @@ async def root():
     return "Healthy"
 
 @app.post("/api/v1/service")
-async def create(body: CreateServiceModel, response: Response):
+async def create(
+        body: CreateServiceModel,
+        response: Response,
+        authorization: Annotated[str | None, Header()] = None
+):
+    if authorization is None:
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return
+    if authorization != secret_key:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return
     try:
         client.images.pull(body.image, body.tag)
         container_id = str(uuid.uuid4())
@@ -87,7 +99,17 @@ async def create(body: CreateServiceModel, response: Response):
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 @app.delete("/api/v1/service")
-async def delete(body: DeleteServiceModel, response: Response):
+async def delete(
+        body: DeleteServiceModel,
+        response: Response,
+        authorization: Annotated[str | None, Header()] = None
+):
+    if authorization is None:
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return
+    if authorization != secret_key:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return
     try:
         container = client.containers.get(body.id)
         container.stop()
