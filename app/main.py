@@ -47,7 +47,8 @@ if not util.network_exists(client, network_name):
 if skip_proxy is None or skip_proxy.lower() != "true":
     if not util.container_exists(client, "proxy"):
         print("Could not find proxy container. Creating it now...")
-        client.images.pull("traefik", "latest")
+        if not util.image_exists(client, "traefik:latest"):
+            client.images.pull("traefik", "latest")
         client.containers.run(
             image="traefik",
             name="proxy",
@@ -77,7 +78,9 @@ async def create(
         response.status_code = status.HTTP_403_FORBIDDEN
         return
     try:
-        client.images.pull(body.image, body.tag)
+        if not util.image_exists(client, "{}:{}}".format(body.image, body.tag)):
+            client.images.pull(body.image, body.tag)
+
         container_id = str(uuid.uuid4())
         url = base.replace("*", container_id[:8])
         client.containers.run(
