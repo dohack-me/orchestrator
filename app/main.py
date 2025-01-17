@@ -44,7 +44,7 @@ if not util.network_exists(client, network_name):
     )
     print("Created proxy network.")
 
-if skip_proxy is not None and skip_proxy.lower() == "true":
+if skip_proxy is None or skip_proxy.lower() != "true":
     if not util.container_exists(client, "proxy"):
         print("Could not find proxy container. Creating it now...")
         client.images.pull("traefik", "latest")
