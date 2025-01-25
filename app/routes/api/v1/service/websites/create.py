@@ -8,18 +8,18 @@ from pydantic import BaseModel
 import docker.errors
 
 router = APIRouter(
-    prefix="/api/v1",
+    prefix="/api/v1/service",
     dependencies=[Depends(dependencies.get_key)]
 )
 
-class CreateServiceModel(BaseModel):
+class CreateWebsiteModel(BaseModel):
     image: str
     tag: str = "latest"
 
 
-@router.post("/service")
+@router.post("/website")
 async def create(
-        body: CreateServiceModel,
+        body: CreateWebsiteModel,
         response: Response,
 ):
     try:
