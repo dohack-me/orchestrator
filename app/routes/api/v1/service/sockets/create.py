@@ -37,7 +37,7 @@ async def create(
             network=network_name,
         )
         container.reload()
-        port = list(container.ports.values())[0][0]["HostPort"]
+        port = int(list(container.ports.values())[0][0]["HostPort"])
         return {
             "id": container_id,
             "port": port
