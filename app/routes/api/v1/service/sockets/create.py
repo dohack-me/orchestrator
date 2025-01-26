@@ -37,12 +37,10 @@ async def create(
             network=network_name,
         )
         container.reload()
-        ports = {}
-        for container_port, host_info in container.ports.items():
-            ports.update({container_port.split("/")[0]: host_info[0]["HostPort"]})
+        port = list(container.ports.values())[0][0]["HostPort"]
         return {
             "id": container_id,
-            "ports": ports
+            "port": port
         }
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
