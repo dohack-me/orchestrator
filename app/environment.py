@@ -9,7 +9,6 @@ def assert_env(name):
 base_url = assert_env("BASE_URL")
 secret_key = assert_env("SECRET_KEY")
 network_name = assert_env('NETWORK_NAME')
-email = assert_env("EMAIL")
 skip_proxy = assert_env("SKIP_PROXY")
 
 if base_url.count("*") > 1:

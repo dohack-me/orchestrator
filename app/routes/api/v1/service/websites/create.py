@@ -37,10 +37,7 @@ async def create(
             labels={
                 "traefik.enable": "true",
                 f"traefik.http.routers.http-{container_id}.entrypoints": "http",
-                f"traefik.http.routers.http-{container_id}.rule": f"Host(`{url}` && PathPrefix(`/`))",
-                f"traefik.http.routers.https-{container_id}.entrypoints": "https",
-                f"traefik.http.routers.https-{container_id}.rule": f"Host(`{url}`)",
-                f"traefik.http.routers.https-{container_id}.tls.certresolver": "letsencrypt"
+                f"traefik.http.routers.http-{container_id}.rule": f"Host(`{url}`)",
             }
         )
         return {
