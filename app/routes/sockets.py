@@ -1,14 +1,16 @@
 import uuid
-from app import dependencies, util
-from app.main import client
-from app.environment import network_name
+
+import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
 from pydantic import BaseModel
-import docker.errors
+
+from app import dependencies, util
+from app.main import client
+from app.environment import network_name
 
 router = APIRouter(
-    prefix="/api/v1/service",
+    prefix="/api/v1/service/socket",
     dependencies=[Depends(dependencies.get_key)]
 )
 
@@ -17,7 +19,7 @@ class CreateSocketModel(BaseModel):
     tag: str = "latest"
 
 
-@router.post("/socket")
+@router.post("/")
 async def create(
         body: CreateSocketModel,
         response: Response,
@@ -42,5 +44,18 @@ async def create(
             "id": container_id,
             "port": port
         }
+    except docker.errors.APIError:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+@router.delete("/{service_id}/")
+async def delete(
+        service_id: str,
+        response: Response
+):
+    try:
+        container = client.containers.get(service_id)
+        container.stop()
+    except docker.errors.NotFound:
+        response.status_code = status.HTTP_404_NOT_FOUND
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -1,14 +1,16 @@
 import uuid
-from app import dependencies, util
-from app.main import client
-from app.environment import base_url, network_name
+
+import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
 from pydantic import BaseModel
-import docker.errors
+
+from app import dependencies, util
+from app.main import client
+from app.environment import base_url, network_name
 
 router = APIRouter(
-    prefix="/api/v1/service",
+    prefix="/api/v1/service/website",
     dependencies=[Depends(dependencies.get_key)]
 )
 
@@ -17,7 +19,7 @@ class CreateWebsiteModel(BaseModel):
     tag: str = "latest"
 
 
-@router.post("/website")
+@router.post("/")
 async def create(
         body: CreateWebsiteModel,
         response: Response,
@@ -44,5 +46,19 @@ async def create(
             "id": container_id,
             "url": "https://" + url
         }
+    except docker.errors.APIError:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@router.delete("/{service_id}/")
+async def delete(
+        service_id: str,
+        response: Response
+):
+    try:
+        container = client.containers.get(service_id)
+        container.stop()
+    except docker.errors.NotFound:
+        response.status_code = status.HTTP_404_NOT_FOUND
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
