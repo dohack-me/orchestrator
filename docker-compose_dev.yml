@@ -18,14 +18,25 @@ services:
     image: traefik:latest
     container_name: orchestrator-traefik
     restart: unless-stopped
+    env_file:
+      - .env
     command:
       - "--providers.docker=true"
-      - "-entrypoints.http.address=:80"
+      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=5"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.tcp.address=:1000"
     ports:
       - "80:80"
+      - "1000:1000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./run/traefik:/traefik"
+      - "./run/acme:/acme"
 networks:
   default:
     name: orchestrator

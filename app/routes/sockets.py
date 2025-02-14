@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from app import dependencies, util
 from app.main import client
-from app.environment import network_name
+from app.environment import network_name, base_url
 
 router = APIRouter(
     prefix="/api/v1/service/socket",
@@ -30,20 +30,28 @@ async def create(
             client.images.pull(body.image, body.tag)
 
         container_id = str(uuid.uuid4())
+        url = base_url.replace("*", container_id[:8])
+
         container = client.containers.run(
             image=f"{body.image}:{body.tag}",
             name=container_id,
             auto_remove=True,
             detach=True,
-            publish_all_ports=True,
             privileged=True,
             network=network_name,
+            labels={
+                "traefik.enable": "true",
+                f"traefik.tcp.routers.tcp-{container_id}.entrypoints": "tcp",
+                f"traefik.tcp.routers.tcp-{container_id}.rule": f"HostSNI(`{url}`)",
+                f"traefik.tcp.routers.tcp-{container_id}.tls": "true",
+                f"traefik.tcp.routers.tcp-{container_id}.tls.certresolver": "letsencrypt",
+                f"traefik.tcp.routers.tcp-{container_id}.tls.domains[0].main": base_url
+            }
         )
         container.reload()
-        port = int(list(container.ports.values())[0][0]["HostPort"])
         return {
             "id": container_id,
-            "port": port
+            "url": url
         }
     except docker.errors.APIError as exception:
         warnings.warn(str(exception))
