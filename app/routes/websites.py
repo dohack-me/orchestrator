@@ -1,4 +1,5 @@
 import uuid
+import warnings
 
 import docker.errors
 from fastapi import APIRouter
@@ -46,7 +47,8 @@ async def create(
             "id": container_id,
             "url": "https://" + url
         }
-    except docker.errors.APIError:
+    except docker.errors.APIError as exception:
+        warnings.warn(str(exception))
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 

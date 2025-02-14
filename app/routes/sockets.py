@@ -1,4 +1,5 @@
 import uuid
+import warnings
 
 import docker.errors
 from fastapi import APIRouter
@@ -44,7 +45,8 @@ async def create(
             "id": container_id,
             "port": port
         }
-    except docker.errors.APIError:
+    except docker.errors.APIError as exception:
+        warnings.warn(str(exception))
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 @router.delete("/{service_id}/")
