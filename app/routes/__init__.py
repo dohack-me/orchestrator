@@ -1,1 +1,1 @@
-from app.routes import ping, sockets, websites
+from app.routes import ping, sockets, websites, images
