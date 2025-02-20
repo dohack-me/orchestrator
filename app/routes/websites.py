@@ -4,25 +4,20 @@ import warnings
 import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
-from pydantic import BaseModel
 
 from app import dependencies, util
 from app.main import client
 from app.environment import base_url, network_name
+from app.models import ImageModel
 
 router = APIRouter(
     prefix="/api/v1/service/website",
     dependencies=[Depends(dependencies.get_key)]
 )
 
-class CreateWebsiteModel(BaseModel):
-    image: str
-    tag: str = "latest"
-
-
 @router.post("/")
 async def create(
-        body: CreateWebsiteModel,
+        body: ImageModel,
         response: Response,
 ):
     try:
