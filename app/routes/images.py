@@ -19,7 +19,7 @@ async def pull_image(
         body: ImageModel,
 ):
     client.images.pull(
-        repository=body.repository,
+        repository=body.image,
         tag=body.tag,
     )
 
@@ -30,7 +30,7 @@ async def delete_image(
 ):
     try:
         client.images.remove(
-            image=f"{body.repository}:{body.tag}",
+            image=f"{body.image}:{body.tag}",
         )
     except docker.errors.APIError: # why is there no errors documented for this method lol, im assuming it throws this error
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
