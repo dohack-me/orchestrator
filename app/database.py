@@ -26,14 +26,28 @@ def init_database():
     cur.close()
 
 
-def create_row(container_name: str):
+def create_service(service_id: str):
+    expiry_time = util.get_expiry_time()
     cur = conn.cursor()
-    cur.execute("INSERT INTO containers (service_id, expiry) VALUES (?, ?)", (container_name, util.get_expiry_time()))
+    cur.execute("INSERT INTO containers (service_id, expiry) VALUES (?, ?)", (service_id, expiry_time))
+    conn.commit()
+    cur.close()
+    return expiry_time
+
+def extend_service(service_id: str):
+    expiry_time = util.get_expiry_time()
+    cur = conn.cursor()
+    cur.execute("UPDATE containers SET expiry = ? WHERE service_id = ?", (expiry_time, service_id))
+    conn.commit()
+    cur.close()
+    return expiry_time
+
+def delete_service(service_id: str):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM containers WHERE service_id = ?", (service_id,))
     conn.commit()
     cur.close()
 
-def delete_row(container_name: str):
+def is_service(service_id: str) -> bool:
     cur = conn.cursor()
-    cur.execute("DELETE FROM containers WHERE service_id = ?", (container_name,))
-    conn.commit()
-    cur.close()
+    return cur.execute("SELECT service_id FROM containers WHERE service_id = ?", (service_id,)).fetchone() is not None

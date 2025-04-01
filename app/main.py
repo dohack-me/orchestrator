@@ -13,6 +13,5 @@ database.init_database()
 
 from app import routes
 app.include_router(routes.ping.router)
-app.include_router(routes.websites.router)
-app.include_router(routes.sockets.router)
+app.include_router(routes.services.router)
 app.include_router(routes.images.router)

@@ -10,8 +10,9 @@ secret_key = assert_env("SECRET_KEY")
 network_name = assert_env('NETWORK_NAME')
 authenticate = assert_env('AUTHENTICATE') == "true"
 database_path = assert_env('DATABASE_PATH')
-registry = (assert_env('REGISTRY') if authenticate else None)
 container_lifetime = assert_env('CONTAINER_LIFETIME')
+public_host = assert_env('PUBLIC_HOST')
+registry = (assert_env('REGISTRY') if authenticate else None)
 registry_username = (assert_env('REGISTRY_USERNAME') if authenticate else None)
 registry_password = (assert_env('REGISTRY_PASSWORD') if authenticate else None)
 
