@@ -10,9 +10,12 @@ services:
       SECRET_KEY: test
       NETWORK_NAME: orchestrator
       AUTHENTICATE: false
+      DATABASE_PATH: /database.sqlite
+      CONTAINER_LIFETIME: 1800
     ports:
       - "8000:8080"
     volumes:
+      - "./run/database.sqlite:/database.sqlite"
       - "/var/run/docker.sock:/var/run/docker.sock"
   traefik:
     image: traefik:latest

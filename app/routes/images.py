@@ -1,6 +1,3 @@
-import uuid
-import warnings
-
 import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
@@ -13,6 +10,10 @@ router = APIRouter(
     prefix="/api/v1/image",
     dependencies=[Depends(dependencies.get_key)]
 )
+
+@router.get("/")
+async def get_images():
+    return [(image.id, image.tags) for image in client.images.list()]
 
 @router.put("/")
 async def pull_image(

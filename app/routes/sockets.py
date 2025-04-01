@@ -5,7 +5,7 @@ import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
 
-from app import dependencies, util
+from app import dependencies, util, database
 from app.main import client
 from app.environment import network_name
 from app.models import ImageModel
@@ -24,10 +24,10 @@ async def create(
         if not util.image_exists(f"{body.image}:{body.tag}"):
             client.images.pull(body.image, body.tag)
 
-        container_id = str(uuid.uuid4())
+        service_id = str(uuid.uuid4())
         container = client.containers.run(
             image=f"{body.image}:{body.tag}",
-            name=container_id,
+            name=service_id,
             auto_remove=True,
             detach=True,
             publish_all_ports=True,
@@ -36,8 +36,9 @@ async def create(
         )
         container.reload()
         port = int(list(container.ports.values())[0][0]["HostPort"])
+        database.create_row(service_id)
         return {
-            "id": container_id,
+            "id": service_id,
             "port": port
         }
     except docker.errors.APIError as exception:
@@ -52,6 +53,7 @@ async def delete(
     try:
         container = client.containers.get(service_id)
         container.stop()
+        database.delete_row(service_id)
     except docker.errors.NotFound:
         response.status_code = status.HTTP_404_NOT_FOUND
     except docker.errors.APIError:

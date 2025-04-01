@@ -7,6 +7,10 @@ from app.environment import authenticate, registry, registry_username, registry_
 if authenticate:
     client.login(username=registry_username, password=registry_password, registry=registry)
 
+from app import database
+
+database.init_database()
+
 from app import routes
 app.include_router(routes.ping.router)
 app.include_router(routes.websites.router)
