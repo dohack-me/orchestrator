@@ -7,9 +7,10 @@ from app.environment import authenticate, registry, registry_username, registry_
 if authenticate:
     client.login(username=registry_username, password=registry_password, registry=registry)
 
-from app import database
+from app import database, scheduler
 
 database.init_database()
+scheduler.init_schedulers()
 
 from app import routes
 app.include_router(routes.ping.router)

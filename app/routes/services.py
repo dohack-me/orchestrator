@@ -5,7 +5,7 @@ import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
 
-from app import dependencies, database
+from app import dependencies, database, scheduler
 from app.main import client
 from app.environment import network_name, base_url, public_host, authenticate
 from app.models import ImageWithTypeModel, ServiceTypes
@@ -64,6 +64,7 @@ async def create_service(
                     "message": f"Unknown service type: {body.type}",
                 }
         expiry_time = database.create_service(service_id)
+        scheduler.start_service_schedule(service_id)
         return {
             "id": service_id,
             "endpoint": endpoint,
@@ -72,6 +73,22 @@ async def create_service(
     except docker.errors.APIError as exception:
         warnings.warn(str(exception))
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+@router.get("/{service_id}/")
+async def get_expiry(
+        service_id: str,
+        response: Response
+):
+    if not database.is_service(service_id):
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {
+            "message": f"Could not find service with ID {service_id}",
+        }
+    expiry_time = database.get_expiry_time(service_id)
+    return {
+        "id": service_id,
+        "expiry": expiry_time,
+    }
 
 @router.put("/{service_id}/")
 async def extend_socket(
@@ -84,6 +101,7 @@ async def extend_socket(
             "message": f"Could not find service with ID {service_id}",
         }
     expiry_time = database.extend_service(service_id)
+    scheduler.update_service_schedule(service_id)
     return {
         "id": service_id,
         "expiry": expiry_time,
@@ -99,7 +117,11 @@ async def delete_service(
         container = client.containers.get(service_id)
         container.stop()
         database.delete_service(service_id)
+        scheduler.cancel_service_schedule(service_id)
     except docker.errors.NotFound:
         response.status_code = status.HTTP_404_NOT_FOUND
+        return {
+            "message": f"Could not find service with ID {service_id}",
+        }
     except docker.errors.APIError:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

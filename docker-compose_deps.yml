@@ -1,23 +1,4 @@
 services:
-  orchestrator:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: orchestrator
-    restart: no
-    environment:
-      BASE_URL: localhost
-      SECRET_KEY: test
-      NETWORK_NAME: orchestrator
-      AUTHENTICATE: false
-      DATABASE_PATH: /database.sqlite
-      CONTAINER_LIFETIME: 15
-      PUBLIC_HOST: localhost
-    ports:
-      - "8000:8080"
-    volumes:
-      - "./run/database.sqlite:/database.sqlite"
-      - "/var/run/docker.sock:/var/run/docker.sock"
   traefik:
     image: traefik:latest
     container_name: orchestrator-traefik

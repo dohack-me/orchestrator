@@ -1,9 +1,9 @@
 import uuid
 import datetime
+from zoneinfo import ZoneInfo
 
 import docker.errors
 
-from app import database
 from app.main import client
 from app.environment import container_lifetime
 
@@ -36,4 +36,4 @@ def is_uuid(target: str):
     return str(uuid_object) == target
 
 def get_expiry_time():
-    return datetime.datetime.now() + datetime.timedelta(seconds=int(container_lifetime))
+    return datetime.datetime.now(tz=ZoneInfo("Etc/UTC")) + datetime.timedelta(seconds=int(container_lifetime))
