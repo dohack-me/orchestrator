@@ -75,7 +75,7 @@ async def create_service(
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 @router.get("/{service_id}/")
-async def get_expiry(
+async def get_service_expiry(
         service_id: str,
         response: Response
 ):
@@ -91,7 +91,7 @@ async def get_expiry(
     }
 
 @router.put("/{service_id}/")
-async def extend_socket(
+async def extend_service(
         service_id: str,
         response: Response
 ):
