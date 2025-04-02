@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from enum import Enum
 
 class ServiceTypes(Enum):
-    WEBSITE = "website"
-    SOCKET = "socket"
+    WEBSITE = "WEBSITE"
+    SOCKET = "SOCKET"
 
 class ImageModel(BaseModel):
     image: str
