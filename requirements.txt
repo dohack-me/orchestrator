@@ -3,3 +3,6 @@ fastapi
 fastapi[standard]
 pydantic
 uvicorn
+psycopg
+psycopg-binary
+psycopg-pool

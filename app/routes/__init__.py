@@ -1,1 +1,1 @@
-from app.routes import ping, services, images
+from app.routes import ping, images

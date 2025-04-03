@@ -11,9 +11,11 @@ router = APIRouter(
     dependencies=[Depends(dependencies.get_key)]
 )
 
+
 @router.get("/")
 async def get_images():
     return [(image.id, image.tags) for image in client.images.list()]
+
 
 @router.put("/")
 async def pull_image(
@@ -24,6 +26,7 @@ async def pull_image(
         tag=body.tag,
     )
 
+
 @router.delete("/")
 async def delete_image(
         body: ImageModel,
@@ -33,5 +36,5 @@ async def delete_image(
         client.images.remove(
             image=f"{body.image}:{body.tag}",
         )
-    except docker.errors.APIError: # why is there no errors documented for this method lol, im assuming it throws this error
+    except docker.errors.APIError:  # why is there no errors documented for this method lol, im assuming it throws this error
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

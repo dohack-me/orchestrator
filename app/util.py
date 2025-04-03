@@ -1,32 +1,9 @@
-import uuid
 import datetime
+import uuid
 from zoneinfo import ZoneInfo
 
-import docker.errors
-
-from app.main import client
 from app.environment import container_lifetime
 
-def image_exists(image: str):
-    try:
-        client.images.get(image)
-    except docker.errors.ImageNotFound:
-        return False
-    return True
-
-def container_exists(name: str):
-    try:
-        client.containers.get(name)
-    except docker.errors.NotFound:
-        return False
-    return True
-
-def network_exists(name: str):
-    try:
-        client.networks.get(name)
-    except docker.errors.NotFound:
-        return False
-    return True
 
 def is_uuid(target: str):
     try:

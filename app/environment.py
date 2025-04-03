@@ -1,15 +1,17 @@
 import os
 
+
 def assert_env(name: str):
     if (env := os.getenv(name)) is None:
         raise RuntimeError(f"Environment variable {name} is not set")
     return env
 
+
 base_url = assert_env("BASE_URL")
 secret_key = assert_env("SECRET_KEY")
 network_name = assert_env('NETWORK_NAME')
 authenticate = assert_env('AUTHENTICATE') == "true"
-database_path = assert_env('DATABASE_PATH')
+database_url = assert_env('DATABASE_URL')
 container_lifetime = assert_env('CONTAINER_LIFETIME')
 public_host = assert_env('PUBLIC_HOST')
 registry = (assert_env('REGISTRY') if authenticate else None)
