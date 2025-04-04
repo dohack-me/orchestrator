@@ -2,9 +2,8 @@
 This file is responsible for deploying Docker containers on the host machine,
 then returning appropriate endpoints for clients to connect to.
 """
-
-from app.environment import base_url, network_name, public_host
-from app.main import client
+from src.environment import base_url, network_name, public_host
+from src.main import client
 
 
 def deploy_website(image: str, tag: str, instance_id: str):
