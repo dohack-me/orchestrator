@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from src.environment import container_lifetime
+from src.environment import instance_lifetime
 
 
 def is_uuid(target: str):
@@ -13,4 +13,4 @@ def is_uuid(target: str):
 
 
 def get_expiry_time():
-    return datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=int(container_lifetime))
+    return datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=int(instance_lifetime))

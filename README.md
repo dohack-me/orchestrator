@@ -15,5 +15,5 @@ Website containers are proxied via a Traefik instance. Socket containers are dir
   - `REGISTRY_USERNAME` - The username to use to connect to the registry.
   - `REGISTRY_PASSWORD` - The password to use to connect to the registry.
 - `DATABASE_PATH` - The relative path to the app's SQLite database.
-- `CONTAINER_LIFETIME` - The amount of seconds each instance will last for.
+- `INSTANCE_LIFETIME` - The amount of seconds each instance will last for.
 - `PUBLIC_HOST` - The hostname to use when returning the netcat command endpoint for socket instances.

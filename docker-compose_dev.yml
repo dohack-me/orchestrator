@@ -11,7 +11,7 @@ services:
       NETWORK_NAME: orchestrator
       AUTHENTICATE: false
       DATABASE_PATH: /database.sqlite
-      CONTAINER_LIFETIME: 15
+      INSTANCE_LIFETIME: 60
       PUBLIC_HOST: localhost
     ports:
       - "8000:8080"
