@@ -35,7 +35,7 @@ class OrchestratorBackendSingleton:
         logging.info("Syncing events with database")
         self.sync_events()
 
-    def sync_database(self):
+    def sync_database(self) -> None:
         docker_instance_ids = set(
             [container.name for container in self.client.containers.list() if util.is_uuid(container.name)])
         database_instance_ids = set([instance.instance_id for instance in self.instances_table.read_instances()])
@@ -50,6 +50,6 @@ class OrchestratorBackendSingleton:
             logging.info(f"Removing orphan database row instance {instance_id}")
             self.instances_table.delete_instance(instance_id)
 
-    def sync_events(self):
+    def sync_events(self) -> None:
         for instance in self.instances_table.read_instances():
             self.scheduler.start_instance_event(instance.instance_id, instance.expiry)

@@ -23,18 +23,18 @@ class OrchestratorSchedulerSingleton:
         while True:
             self.scheduler.run(blocking=True)
 
-    def start_instance_event(self, instance_id: str, expiry_time: datetime.datetime):
+    def start_instance_event(self, instance_id: str, expiry_time: datetime.datetime) -> None:
         event = self.scheduler.enterabs(expiry_time.timestamp(), 1, self.shutdown_instance, (instance_id,))
         self.events.update({instance_id: event})
 
-    def cancel_service_schedule(self, instance_id: str):
+    def cancel_service_schedule(self, instance_id: str) -> None:
         self.scheduler.cancel(self.events.pop(instance_id))
 
-    def update_service_schedule(self, instance_id: str, expiry_time: datetime.datetime):
+    def update_service_schedule(self, instance_id: str, expiry_time: datetime.datetime) -> None:
         self.scheduler.cancel(self.events.get(instance_id))
         self.start_instance_event(instance_id, expiry_time)
 
-    def shutdown_instance(self, instance_id: str):
+    def shutdown_instance(self, instance_id: str) -> None:
         logging.info(f"Removing expired instance {instance_id}")
 
         self.app.instances_table.delete_instance(instance_id)

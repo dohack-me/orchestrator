@@ -7,10 +7,10 @@ from src.environment import base_url, network_name, public_host
 
 
 class OrchestratorDeployerSingleton:
-    def __init__(self, app: OrchestratorBackendSingleton) -> str:
+    def __init__(self, app: OrchestratorBackendSingleton):
         self.app = app
 
-    def deploy_website(self, image: str, tag: str, instance_id: str):
+    def deploy_website(self, image: str, tag: str, instance_id: str) -> str:
         url = base_url.replace("*", instance_id[:8])
         self.app.client.containers.run(
             image=f"{image}:{tag}",
