@@ -1,9 +1,11 @@
 import os
 
+
 def assert_env(name: str):
     if (env := os.getenv(name)) is None:
         raise RuntimeError(f"Environment variable {name} is not set")
     return env
+
 
 base_url = assert_env("BASE_URL")
 secret_key = assert_env("SECRET_KEY")

@@ -2,27 +2,30 @@ import docker.errors
 from fastapi import APIRouter
 from fastapi import Response, Depends, status
 
-from app import dependencies
-from app.main import client
-from app.models import ImageModel
+from src.frontend import dependencies
+from src.frontend.models import ImageModel
+from src.main import backend
 
 router = APIRouter(
     prefix="/api/v1/image",
     dependencies=[Depends(dependencies.get_key)]
 )
 
+
 @router.get("/")
 async def get_images():
-    return [(image.id, image.tags) for image in client.images.list()]
+    return [(image.id, image.tags) for image in backend.client.images.list()]
+
 
 @router.put("/")
 async def pull_image(
         body: ImageModel,
 ):
-    client.images.pull(
+    backend.client.images.pull(
         repository=body.image,
         tag=body.tag,
     )
+
 
 @router.delete("/")
 async def delete_image(
@@ -30,8 +33,8 @@ async def delete_image(
         response: Response,
 ):
     try:
-        client.images.remove(
+        backend.client.images.remove(
             image=f"{body.image}:{body.tag}",
         )
-    except docker.errors.APIError: # why is there no errors documented for this method lol, im assuming it throws this error
+    except docker.errors.APIError:  # why is there no errors documented for this method lol, im assuming it throws this error
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
